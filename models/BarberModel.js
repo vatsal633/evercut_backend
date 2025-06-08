@@ -1,0 +1,87 @@
+// import mongoose from "mongoose";
+
+// const breakTimeSchema = new mongoose.Schema({
+//   start: String,
+//   end: String,
+// });
+
+// const barberSetupSchema = new mongoose.Schema({
+//   // Step 1 - Basic Info
+//   shopName: { type: String, required: true },
+//   numberOfEmployees: { type: Number, required: true },
+//   yearsOfExperience: { type: Number, required: true },
+//   upiId: { type: String, required: true },
+//   location: { type: String, required: true },
+//   bio: { type: String },
+
+//   // Step 2 - Shop Type
+//   shopCategory: { 
+//     type: String, 
+//     enum: ["Salon", "Beauty Parlour", "Narber", "Door-Step"],
+//     required: true,
+//   },
+//   facilities: [String],
+
+//   // Step 3 - Time & Availability
+//   availableDays: [String],
+//   openTime: String,
+//   closeTime: String,
+//   breakTimes: [breakTimeSchema],
+
+//   // Step 4 - Set PIN
+//   pin: { type: String, required: true }, // hashed
+
+//   createdAt: {
+//     type: Date,
+//     default: Date.now,
+//   },
+// });
+
+// export default mongoose.model("BarberSetup", barberSetupSchema);
+
+
+// models/BarberSetup.js
+import mongoose from "mongoose";
+
+const breakTimeSchema = new mongoose.Schema({
+  start: String,
+  end: String,
+});
+
+const barberSetupSchema = new mongoose.Schema({
+  // Step 1 - Basic Info
+  firebaseUid: { type: String, required: true, unique: true },
+  shopName: { type: String, required: true },
+  numberOfEmployees: { type: Number, required: true },
+  yearsOfExperience: { type: Number, required: true },
+  phoneNumber: { type: String, required: true, unique: true },
+  shopOwner: {type:String, required:true },
+  emailId:{type: String, required: true},
+  upiId: { type: String, required: true },
+  location: { type: String, required: true },
+  bio: { type: String },
+
+  // Step 2 - Shop Type
+  shopCategory: {
+    type: String,
+    enum: ["Salon", "Beauty Parlour", "Barber", "Door-Step"],
+    required: true,
+  },
+  facilities: [String],
+
+  // Step 3 - Time & Availability
+  availableDays: [String],
+  openTime: String,
+  closeTime: String,
+  breakTimes: [breakTimeSchema],
+
+  // Step 4 - Set PIN
+  pin: { type: String, required: true }, // hashed
+
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+});
+
+export default mongoose.model("BarberSetup", barberSetupSchema);
