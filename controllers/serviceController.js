@@ -2,7 +2,7 @@ import Services from '../models/Service.js';
 
 // CREATE a new service
 export const addService = async (req, res) => {
-  const firebaseUid = req.firebaseUser?.firebaseUid || req.body.firebaseUid;
+  const firebaseUid = req.firebaseUser?.uid;
 
   const {
     serviceType,
@@ -10,7 +10,7 @@ export const addService = async (req, res) => {
     duration,
     actualPrice,
     offerPrice,
-    bundledServicesName,
+    bundledServices, // Changed from bundledServicesName
     totalDuration,
   } = req.body;
 
@@ -26,20 +26,29 @@ export const addService = async (req, res) => {
         offerPrice,
         finalPrice,
       });
-      console.log("Single service added");
-      return res.status(201).json({ message: 'Single service added', service });
-    } else if (serviceType === 'bundled') {
+
+      return res.status(201).json({ 
+        message: 'Single service added successfully', 
+        service 
+      });
+    }
+    else if (serviceType === 'bundled') {
       const totalPrice = actualPrice + offerPrice;
       const service = await Services.create({
         firebaseUid,
         serviceType,
         serviceName,
-        bundledServicesName,
+        bundledServices, // Use bundledServices instead of bundledServicesName
         totalDuration,
+        actualPrice,
+        offerPrice,
         totalPrice,
       });
-      console.log("Bundled service added");
-      return res.status(201).json({ message: 'Bundled service added', service });
+
+      return res.status(201).json({ 
+        message: 'Bundled service added successfully', 
+        service 
+      });
     } else {
       return res.status(400).json({ message: 'Invalid service type' });
     }
