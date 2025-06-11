@@ -1,66 +1,4 @@
-// import BarberSetup from "../models/BarberSet.js";
-// import bcrypt from "bcryptjs";
-
-// export const handleBarberSetup = async (req, res) => {
-//   console.log("✅ /api/barber/setup hit");
-
-//   try {
-//     const {
-//       shopName,
-//       numberOfEmployees,
-//       yearsOfExperience,
-//       upiId,
-//       location,
-//       bio,
-//       shopCategory,
-//       facilities,
-//       availableDays,
-//       openTime,
-//       closeTime,
-//       breakTimes,
-//       pin,
-//       confirmPin,
-//     } = req.body;
-
-//     if (pin !== confirmPin) {
-//       return res.status(400).json({ message: "PINs do not match" });
-//     }
-
-//     const hashedPin = await bcrypt.hash(pin, 10);
-
-//     const newBarber = new BarberSetup({
-//       shopName,
-//       numberOfEmployees,
-//       yearsOfExperience,
-//       upiId,
-//       location,
-//       bio,
-//       shopCategory,
-//       facilities,
-//       availableDays,
-//       openTime,
-//       closeTime,
-//       breakTimes,
-//       pin: hashedPin,
-//     });
-
-//     await newBarber.save();
-
-//     res.status(201).json({
-//       message: "Barber setup completed successfully",
-//       barber: newBarber,
-//     });
-
-//   } catch (error) {
-//     console.error("Barber setup error:", error);
-//     res.status(500).json({ message: "Server error during setup" });
-//   }
-// };
-
-
 import BarberSetup from '../models/BarberModel.js';
-// import bcrypt from 'bcryptjs';
-
 
 export const checkBarberAfterOTP = async (req, res) => {
   const { uid, phone_number } = req.firebaseUser;
@@ -89,8 +27,16 @@ export const checkBarberAfterOTP = async (req, res) => {
 };
 
 export const completeBarberProfile = async (req, res) => {
+  // ✅ Get firebaseUid from the authenticated user
+  const { uid } = req.firebaseUser;
+  
+  // ✅ Debug logging
+  console.log('=== DEBUG INFO ===');
+  console.log('Firebase UID:', uid);
+  console.log('Request body:', req.body);
+  console.log('==================');
+
   const {
-    firebaseUid,
     phoneNumber,
     shopName,
     numberOfEmployees,
@@ -111,21 +57,46 @@ export const completeBarberProfile = async (req, res) => {
   } = req.body;
 
   try {
-    const existing = await BarberSetup.findOne({ firebaseUid });
+    // ✅ Check if barber already exists using Firebase UID
+    const existing = await BarberSetup.findOne({ firebaseUid: uid });
     if (existing) {
-      return res.status(400).json({ error: 'Barber already exists' });
+      return res.status(400).json({ error: 'Barber profile already exists' });
     }
 
-      // 2. Check if PINs match
-      if (pin !== confirmPin) {
-        return res.status(400).json({ message: 'PINs do not match' });
-      }
-  
-      // 3. Hash the PIN
-      // const hashedPin = await bcrypt.hash(pin, 10);
+    // ✅ Validate required fields
+    const requiredFields = {
+      firebaseUid: uid, // Use UID from Firebase auth
+      phoneNumber,
+      shopName,
+      numberOfEmployees,
+      yearsOfExperience,
+      shopOwner,
+      emailId,
+      upiId,
+      location,
+      shopCategory,
+      pin
+    };
 
+    const missingFields = Object.entries(requiredFields)
+      .filter(([key, value]) => value === undefined || value === null || value === '')
+      .map(([key]) => key);
+
+    if (missingFields.length > 0) {
+      return res.status(400).json({
+        error: 'Missing required fields',
+        missingFields: missingFields
+      });
+    }
+
+    // ✅ Check if PINs match
+    if (pin !== confirmPin) {
+      return res.status(400).json({ error: 'PINs do not match' });
+    }
+
+    // ✅ Create barber profile
     const barber = await BarberSetup.create({
-      firebaseUid,
+      firebaseUid: uid, // Use UID from Firebase auth
       phoneNumber,
       shopName,
       numberOfEmployees,
@@ -141,15 +112,18 @@ export const completeBarberProfile = async (req, res) => {
       openTime,
       closeTime,
       breakTimes,
-      pin,
-      confirmPin,
+      pin, // You should hash this in production
     });
 
-    res.status(201).json({ message: 'Barber profile saved', barber });
+    // ✅ Don't return the PIN in response
+    const { pin: _, confirmPin: __, ...safeBarber } = barber.toObject();
+
+    res.status(201).json({ 
+      message: 'Barber profile created successfully', 
+      barber: safeBarber 
+    });
   } catch (err) {
-    console.error(err);
+    console.error('Error creating barber profile:', err);
     res.status(500).json({ error: 'Could not complete barber profile' });
   }
 };
-
-
