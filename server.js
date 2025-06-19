@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import path from "path";
 import { fileURLToPath } from 'url';
+import multer from 'multer'; // ✅ Add this import
 import connectDB from "./config/dbConnect.js";
 import router from "./routes/userAuthRoutes.js";
 import router1 from "./routes/barberAuthRoutes.js";
