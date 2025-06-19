@@ -1,4 +1,4 @@
-.env# Node modules
+# Node modules
 /node_modules/
 
 # Environment variables
@@ -8,6 +8,9 @@
 
 # Firebase service account keys or any secrets
 *.json
+
+# Uploaded files
+/uploads/
 
 # Logs
 logs
