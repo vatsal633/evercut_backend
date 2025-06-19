@@ -8,7 +8,7 @@ import {
   permanentDeletePhoto,
   getPhotoStats,
   upload
-} from '../controllers/PhotoController.js';
+} from '../controllers/photoController.js'; // ✅ Fixed: lowercase 'p' to match your actual filename
 import verifyToken from '../middleware/verifyToken.js';
 
 const router = express.Router();
