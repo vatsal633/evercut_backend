@@ -132,7 +132,7 @@
 
 
 import express from "express";
-import {checkBarberAfterOTP, completeBarberProfile } from "../controllers/barberAuth.js";
+import {checkBarberAfterOTP, completeBarberProfile, updateBarberProfile, getBarberProfile } from "../controllers/barberAuth.js";
 import verifyToken from "../middleware/verifyToken.js";
 
 const router1 = express.Router();
@@ -140,5 +140,8 @@ const router1 = express.Router();
 router1.post("/checkBarberAfterOTP", verifyToken, checkBarberAfterOTP);
 router1.post("/complete-barber-profile", completeBarberProfile);
 
+// New routes for profile management
+router1.get("/profile", verifyToken, getBarberProfile);
+router1.put("/profile", verifyToken, updateBarberProfile);
 
 export default router1;
