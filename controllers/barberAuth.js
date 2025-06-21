@@ -152,8 +152,8 @@ export const completeBarberProfile = async (req, res) => {
   }
 };
 
-// Update barber profile
-export const updateBarberProfile = async (req, res) => {
+// Update business info
+export const updateBusinessInfo = async (req, res) => {
   try {
     const { uid } = req.firebaseUser;
     
