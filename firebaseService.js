@@ -27,8 +27,13 @@ const __dirname = path.dirname(__filename);
 const require = createRequire(import.meta.url);
 
 // Resolve path to Firebase service key JSON
-const serviceAccountPath = process.env.FIREBASE_SERVICE_ACCOUNT_KEY_PATH || './firebase-admin-sdk.json';
-const serviceAccount = require(path.resolve(__dirname, serviceAccountPath));
+let serviceAccountPath = process.env.FIREBASE_SERVICE_ACCOUNT_KEY_PATH || './firebase-admin-sdk.json';
+// Clean up the path to remove potential comments and extra whitespace/characters
+serviceAccountPath = serviceAccountPath.split('#')[0].trim();
+
+const absolutePath = path.resolve(__dirname, serviceAccountPath);
+
+const serviceAccount = require(absolutePath);
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
