@@ -11,10 +11,8 @@ import userAuthRoutes from "./routes/user/auth/userAuth.routes.js";
 import barberAuthRoutes from "./routes/barber/auth/barberAuth.routes.js";
 import barberProfileRoutes from "./routes/barber/profile/barberProfile.routes.js";
 import barberBusinessRoutes from "./routes/barber/business/barberBusiness.routes.js";
-
-// Legacy routes (to be refactored later)
-import router2 from "./routes/serviceRoutes.js";
-import employeeRoutes from "./routes/employeeRoutes.js";
+import barberEmployeeRoutes from "./routes/barber/business/barberEmployee.routes.js";
+import barberServiceRoutes from "./routes/barber/business/barberService.routes.js";
 
 dotenv.config();
 
@@ -34,10 +32,8 @@ app.use("/api/user/auth", userAuthRoutes);
 app.use("/api/barber/auth", barberAuthRoutes);
 app.use("/api/barber/profile", barberProfileRoutes);
 app.use("/api/barber/business", barberBusinessRoutes);
-
-// Legacy routes (to be refactored)
-app.use("/api/service", router2);
-app.use('/api/employees', employeeRoutes);
+app.use("/api/barber/employees", barberEmployeeRoutes);
+app.use("/api/barber/services", barberServiceRoutes);
 
 app.listen(PORT, () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`);

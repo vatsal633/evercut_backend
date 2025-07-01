@@ -1,12 +1,9 @@
-import Services from '../models/Service.js';
+// controllers/barber/business/barberService.controller.js
+import Services from '../../../models/Service.js';
 
 export const addService = async (req, res) => {
-  // const { firebaseUid } = req.firebaseUser;
-  const firebaseUid = req.firebaseUser?.firebaseUid || req.body.firebaseUid;
+  const firebaseUid = req.firebaseUser?.uid || req.body.firebaseUid;
 
-
-  // For local testing, you can uncomment the line below to use a test firebase UID
-  // const firebaseUid = req.firebaseUser?.firebaseUid || req.body.firebaseUid || "test_firebase_uid";
   const {
     serviceType,
     serviceName,
@@ -50,5 +47,17 @@ export const addService = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Error adding service' });
+  }
+};
+
+export const getAllServices = async (req, res) => {
+  const firebaseUid = req.firebaseUser?.uid || req.body.firebaseUid;
+
+  try {
+    const services = await Services.find({ firebaseUid });
+    res.status(200).json({ services });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Error getting services' });
   }
 };
