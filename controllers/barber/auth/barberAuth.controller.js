@@ -1,4 +1,5 @@
 import BarberSetup from '../../../models/Barber.model.js';
+import { validatePinCreation, hashPin } from '../profile/barberPinValidation.service.js';
 
 export const checkBarberAfterOTP = async (req, res) => {
   const { uid, phone_number } = req.firebaseUser;
@@ -54,10 +55,14 @@ export const completeBarberProfile = async (req, res) => {
       return res.status(400).json({ error: 'Barber already exists' });
     }
 
-    // Check if PINs match
-    if (pin !== confirmPin) {
-      return res.status(400).json({ message: 'PINs do not match' });
+    // Validate PIN creation
+    const pinValidation = validatePinCreation(pin, confirmPin);
+    if (!pinValidation.isValid) {
+      return res.status(400).json({ message: pinValidation.message });
     }
+
+    // Hash the PIN for security
+    const hashedPin = await hashPin(pin);
 
     const barber = await BarberSetup.create({
       firebaseUid,
@@ -76,8 +81,7 @@ export const completeBarberProfile = async (req, res) => {
       openTime,
       closeTime,
       breakTimes,
-      pin,
-      confirmPin,
+      pin: hashedPin,
     });
 
     res.status(201).json({ message: 'Barber profile saved', barber });
