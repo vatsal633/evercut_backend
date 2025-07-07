@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 const serviceSchema = new mongoose.Schema({
-  firebaseUid: { type: String, required: true }, // Reference to the barber
+  firebaseUid: { type: String, required: true },
 
   serviceType: {
     type: String,
@@ -12,13 +12,13 @@ const serviceSchema = new mongoose.Schema({
   serviceName: { type: String, required: true },
 
   // For single services
-  duration: { type: Number }, // in minutes
+  duration: { type: Number },
   actualPrice: { type: Number },
   offerPrice: { type: Number },
   finalPrice: { type: Number },
 
   // For bundled services
-  bundledServicesName: [{ type: String }], // List of service names if bundled
+  bundledServices: [{ type: String }], // Changed from bundledServicesName
   totalDuration: { type: Number },
   totalPrice: { type: Number },
 

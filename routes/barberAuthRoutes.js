@@ -138,7 +138,6 @@ import verifyToken from "../middleware/verifyToken.js";
 const router1 = express.Router();
 
 router1.post("/checkBarberAfterOTP", verifyToken, checkBarberAfterOTP);
-router1.post("/complete-barber-profile", completeBarberProfile);
-
+router1.post("/complete-barber-profile", verifyToken, completeBarberProfile); // ✅ Added verifyToken
 
 export default router1;
