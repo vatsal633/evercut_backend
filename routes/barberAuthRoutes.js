@@ -6,7 +6,7 @@
 
 // // POST /api/barber/setup
 // router.post("/setup", async (req, res) => {
-//     console.log("✅ /api/barber/setup hit"); 
+//     console.log("✅ /api/barber/setup hit");
 //   try {
 //     const {
 //       shopName,

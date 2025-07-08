@@ -1,7 +1,7 @@
 // routes/userAuthRoutes.js - Updated with profile management routes
 import express from 'express';
-import { 
-  checkUserAfterOTP, 
+import {
+  checkUserAfterOTP,
   completeProfile,
   getUserProfile,
   updateUserProfile,

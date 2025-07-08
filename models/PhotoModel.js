@@ -1,52 +1,52 @@
 import mongoose from 'mongoose';
 
 const photoSchema = new mongoose.Schema({
-  firebaseUid: { 
-    type: String, 
+  firebaseUid: {
+    type: String,
     required: true,
     index: true // Add index for better query performance
   },
-  
-  photoUrl: { 
-    type: String, 
-    required: true 
+
+  photoUrl: {
+    type: String,
+    required: true
   },
-  
-  photoName: { 
-    type: String, 
-    required: true 
+
+  photoName: {
+    type: String,
+    required: true
   },
-  
+
   photoType: {
     type: String,
     enum: ['shop_interior', 'shop_exterior', 'work_sample', 'team_photo', 'certificate', 'other'],
     default: 'other'
   },
-  
-  description: { 
+
+  description: {
     type: String,
-    maxlength: 500 
+    maxlength: 500
   },
-  
-  fileSize: { 
+
+  fileSize: {
     type: Number // Size in bytes
   },
-  
-  mimeType: { 
-    type: String 
+
+  mimeType: {
+    type: String
   },
-  
-  isActive: { 
-    type: Boolean, 
-    default: true 
+
+  isActive: {
+    type: Boolean,
+    default: true
   },
-  
+
   uploadedAt: {
     type: Date,
     default: Date.now
   }
-}, { 
-  timestamps: true 
+}, {
+  timestamps: true
 });
 
 // Add compound index for better query performance

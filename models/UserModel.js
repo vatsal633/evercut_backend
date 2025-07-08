@@ -2,15 +2,15 @@
 import mongoose from 'mongoose';
 
 const userSchema = new mongoose.Schema({
-  firebaseUid: { 
-    type: String, 
+  firebaseUid: {
+    type: String,
     required: true,
     unique: true,
     index: true // Add index for better query performance
   },
-  phoneNumber: { 
-    type: String, 
-    required: true, 
+  phoneNumber: {
+    type: String,
+    required: true,
     unique: true,
     validate: {
       validator: function(v) {
@@ -19,12 +19,12 @@ const userSchema = new mongoose.Schema({
       message: 'Please enter a valid phone number'
     }
   },
-  firstName: { 
+  firstName: {
     type: String,
     trim: true,
     maxlength: [50, 'First name cannot be longer than 50 characters']
   },
-  lastName: { 
+  lastName: {
     type: String,
     trim: true,
     maxlength: [50, 'Last name cannot be longer than 50 characters']
@@ -36,7 +36,7 @@ const userSchema = new mongoose.Schema({
       message: 'Gender must be Male, Female, or Other'
     }
   },
-  dateOfBirth: { 
+  dateOfBirth: {
     type: String,
     validate: {
       validator: function(v) {
@@ -47,12 +47,12 @@ const userSchema = new mongoose.Schema({
       message: 'Date of birth must be in YYYY-MM-DD format'
     }
   },
-  address: { 
+  address: {
     type: String,
     trim: true,
     maxlength: [200, 'Address cannot be longer than 200 characters']
   },
-  email: { 
+  email: {
     type: String,
     trim: true,
     lowercase: true,
@@ -72,7 +72,7 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   }
-}, { 
+}, {
   timestamps: true // Adds createdAt and updatedAt automatically
 });
 

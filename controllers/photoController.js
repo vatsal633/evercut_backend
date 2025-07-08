@@ -12,12 +12,12 @@ const __dirname = path.dirname(__filename);
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const uploadDir = path.join(__dirname, '../uploads/photos');
-    
+
     // Create directory if it doesn't exist
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });
     }
-    
+
     cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
@@ -32,7 +32,7 @@ const storage = multer.diskStorage({
 // File filter for images
 const fileFilter = (req, file, cb) => {
   const allowedMimeTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-  
+
   if (allowedMimeTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
@@ -53,28 +53,28 @@ export const upload = multer({
 // Upload single or multiple photos
 export const uploadPhotos = async (req, res) => {
   const firebaseUid = req.firebaseUser?.uid;
-  
+
   try {
     if (!req.files || req.files.length === 0) {
-      return res.status(400).json({ 
-        message: 'No files uploaded' 
+      return res.status(400).json({
+        message: 'No files uploaded'
       });
     }
 
     const { photoType = 'other', description = '' } = req.body;
-    
+
     // Check photo limit (optional - you can set a limit per barber)
     const existingPhotoCount = await Photo.getPhotoCountByBarber(firebaseUid);
     const maxPhotos = 50; // Set your limit
-    
+
     if (existingPhotoCount + req.files.length > maxPhotos) {
       // Delete uploaded files if limit exceeded
       req.files.forEach(file => {
         fs.unlinkSync(file.path);
       });
-      
-      return res.status(400).json({ 
-        message: `Photo limit exceeded. Maximum ${maxPhotos} photos allowed.` 
+
+      return res.status(400).json({
+        message: `Photo limit exceeded. Maximum ${maxPhotos} photos allowed.`
       });
     }
 
@@ -82,7 +82,7 @@ export const uploadPhotos = async (req, res) => {
 
     for (const file of req.files) {
       const photoUrl = `/uploads/photos/${file.filename}`;
-      
+
       const photo = await Photo.create({
         firebaseUid,
         photoUrl,
@@ -103,7 +103,7 @@ export const uploadPhotos = async (req, res) => {
 
   } catch (error) {
     console.error('Photo upload error:', error);
-    
+
     // Clean up uploaded files on error
     if (req.files) {
       req.files.forEach(file => {
@@ -112,10 +112,10 @@ export const uploadPhotos = async (req, res) => {
         }
       });
     }
-    
-    res.status(500).json({ 
+
+    res.status(500).json({
       message: 'Error uploading photos',
-      error: error.message 
+      error: error.message
     });
   }
 };
@@ -123,29 +123,29 @@ export const uploadPhotos = async (req, res) => {
 // Get all photos for authenticated barber
 export const getPhotos = async (req, res) => {
   const firebaseUid = req.firebaseUser?.uid;
-  
+
   try {
-    const { 
-      photoType, 
-      page = 1, 
+    const {
+      photoType,
+      page = 1,
       limit = 20,
       sortBy = 'uploadedAt',
-      sortOrder = 'desc' 
+      sortOrder = 'desc'
     } = req.query;
 
     // Build query
-    const query = { 
-      firebaseUid, 
-      isActive: true 
+    const query = {
+      firebaseUid,
+      isActive: true
     };
-    
+
     if (photoType && photoType !== 'all') {
       query.photoType = photoType;
     }
 
     // Calculate pagination
     const skip = (parseInt(page) - 1) * parseInt(limit);
-    
+
     // Build sort object
     const sort = {};
     sort[sortBy] = sortOrder === 'desc' ? -1 : 1;
@@ -174,9 +174,9 @@ export const getPhotos = async (req, res) => {
 
   } catch (error) {
     console.error('Get photos error:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       message: 'Error fetching photos',
-      error: error.message 
+      error: error.message
     });
   }
 };
@@ -187,15 +187,15 @@ export const getPhotoById = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const photo = await Photo.findOne({ 
-      _id: id, 
-      firebaseUid, 
-      isActive: true 
+    const photo = await Photo.findOne({
+      _id: id,
+      firebaseUid,
+      isActive: true
     });
 
     if (!photo) {
-      return res.status(404).json({ 
-        message: 'Photo not found' 
+      return res.status(404).json({
+        message: 'Photo not found'
       });
     }
 
@@ -206,9 +206,9 @@ export const getPhotoById = async (req, res) => {
 
   } catch (error) {
     console.error('Get photo by ID error:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       message: 'Error fetching photo',
-      error: error.message 
+      error: error.message
     });
   }
 };
@@ -221,7 +221,7 @@ export const updatePhoto = async (req, res) => {
 
   try {
     const updateData = {};
-    
+
     if (photoType) updateData.photoType = photoType;
     if (description !== undefined) updateData.description = description;
 
@@ -232,8 +232,8 @@ export const updatePhoto = async (req, res) => {
     );
 
     if (!photo) {
-      return res.status(404).json({ 
-        message: 'Photo not found' 
+      return res.status(404).json({
+        message: 'Photo not found'
       });
     }
 
@@ -244,9 +244,9 @@ export const updatePhoto = async (req, res) => {
 
   } catch (error) {
     console.error('Update photo error:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       message: 'Error updating photo',
-      error: error.message 
+      error: error.message
     });
   }
 };
@@ -264,8 +264,8 @@ export const deletePhoto = async (req, res) => {
     );
 
     if (!photo) {
-      return res.status(404).json({ 
-        message: 'Photo not found' 
+      return res.status(404).json({
+        message: 'Photo not found'
       });
     }
 
@@ -275,9 +275,9 @@ export const deletePhoto = async (req, res) => {
 
   } catch (error) {
     console.error('Delete photo error:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       message: 'Error deleting photo',
-      error: error.message 
+      error: error.message
     });
   }
 };
@@ -288,14 +288,14 @@ export const permanentDeletePhoto = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const photo = await Photo.findOneAndDelete({ 
-      _id: id, 
-      firebaseUid 
+    const photo = await Photo.findOneAndDelete({
+      _id: id,
+      firebaseUid
     });
 
     if (!photo) {
-      return res.status(404).json({ 
-        message: 'Photo not found' 
+      return res.status(404).json({
+        message: 'Photo not found'
       });
     }
 
@@ -311,9 +311,9 @@ export const permanentDeletePhoto = async (req, res) => {
 
   } catch (error) {
     console.error('Permanent delete photo error:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       message: 'Error permanently deleting photo',
-      error: error.message 
+      error: error.message
     });
   }
 };
@@ -351,9 +351,9 @@ export const getPhotoStats = async (req, res) => {
 
   } catch (error) {
     console.error('Get photo stats error:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       message: 'Error fetching photo statistics',
-      error: error.message 
+      error: error.message
     });
   }
 };

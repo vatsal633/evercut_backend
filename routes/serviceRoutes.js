@@ -1,9 +1,9 @@
 import express from 'express';
-import { 
-  addService, 
-  getServices, 
-  updateService, 
-  deleteService 
+import {
+  addService,
+  getServices,
+  updateService,
+  deleteService
 } from '../controllers/serviceController.js';
 import verifyToken from '../middleware/verifyToken.js';
 

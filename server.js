@@ -5,15 +5,16 @@ import path from "path";
 import { fileURLToPath } from 'url';
 import multer from 'multer'; // ✅ Add this import
 import connectDB from "./config/dbConnect.js";
-import router from "./routes/userAuthRoutes.js";
-import router1 from "./routes/barberAuthRoutes.js";
-import router2 from "./routes/serviceRoutes.js";
-import employeeRoutes from "./routes/employeeRoutes.js";
-import photoRoutes from "./routes/photoRoutes.js";
 
-// Get __dirname in ESM
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// User routes
+import userAuthRoutes from "./routes/user/auth/userAuth.routes.js";
+
+// Barber routes
+import barberAuthRoutes from "./routes/barber/auth/barberAuth.routes.js";
+import barberProfileRoutes from "./routes/barber/profile/barberProfile.routes.js";
+import barberBusinessRoutes from "./routes/barber/business/barberBusiness.routes.js";
+import barberEmployeeRoutes from "./routes/barber/business/barberEmployee.routes.js";
+import barberServiceRoutes from "./routes/barber/business/barberService.routes.js";
 
 dotenv.config();
 connectDB();
@@ -26,15 +27,15 @@ app.use(cors());
 app.use(express.json({ limit: '10mb' })); // Increase payload limit for photos
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Static file serving for uploaded photos
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// User API routes
+app.use("/api/user/auth", userAuthRoutes);
 
-// Routes
-app.use("/api/userauth", router);
-app.use("/api/barberauth", router1);
-app.use("/api/services", router2);
-app.use("/api/employees", employeeRoutes);
-app.use("/api/photos", photoRoutes);
+// Barber API routes
+app.use("/api/barber/auth", barberAuthRoutes);
+app.use("/api/barber/profile", barberProfileRoutes);
+app.use("/api/barber/business", barberBusinessRoutes);
+app.use("/api/barber/employees", barberEmployeeRoutes);
+app.use("/api/barber/services", barberServiceRoutes);
 
 // Error handling middleware for multer
 app.use((error, req, res, next) => {
@@ -50,13 +51,13 @@ app.use((error, req, res, next) => {
       });
     }
   }
-  
+
   if (error.message.includes('Invalid file type')) {
     return res.status(400).json({
       message: 'Invalid file type. Only JPEG, PNG, GIF, and WebP images are allowed.'
     });
   }
-  
+
   next(error);
 });
 

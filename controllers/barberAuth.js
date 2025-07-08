@@ -29,7 +29,7 @@ export const checkBarberAfterOTP = async (req, res) => {
 export const completeBarberProfile = async (req, res) => {
   // ✅ Get firebaseUid from the authenticated user
   const { uid } = req.firebaseUser;
-  
+
   // ✅ Debug logging
   console.log('=== DEBUG INFO ===');
   console.log('Firebase UID:', uid);
@@ -118,9 +118,9 @@ export const completeBarberProfile = async (req, res) => {
     // ✅ Don't return the PIN in response
     const { pin: _, confirmPin: __, ...safeBarber } = barber.toObject();
 
-    res.status(201).json({ 
-      message: 'Barber profile created successfully', 
-      barber: safeBarber 
+    res.status(201).json({
+      message: 'Barber profile created successfully',
+      barber: safeBarber
     });
   } catch (err) {
     console.error('Error creating barber profile:', err);

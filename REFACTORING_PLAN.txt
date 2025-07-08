@@ -1,0 +1,49 @@
+
+## Before
+evercut_backend/
+├── controllers/
+│   └── barberAuth.js
+├── routes/
+│   └── barberAuthRoutes.js
+└── models/
+    └── BarberModel.js
+
+
+## After
+evercut_backend/
+├── controllers/
+│   ├── user/
+│   │   ├── auth/
+│   │   │   └── userAuth.controller.js      - user authentication logic
+│   │   ├── profile/
+│   │   │   └── userProfile.controller.js   - user profile management
+│   │   └── booking/
+│   │       └── userBooking.controller.js   - user booking functionality
+│   └── barber/
+│       ├── auth/
+│       │   └── barberAuth.controller.js    would contain - checkBarberAfterOTP, completeBarberProfile
+│       ├── profile/
+│       │   └── barberProfile.controller.js - getBarberProfile
+│       └── business/
+│           ├── barberBusiness.controller.js - updateBusinessInfo (main logic)
+│           └── barberValidation.service.js  - all validation logic extracted
+├── routes/
+│   ├── user/
+│   │   ├── auth/
+│   │   │   └── userAuth.routes.js          # user auth routes
+│   │   ├── profile/
+│   │   │   └── userProfile.routes.js       # user profile routes
+│   │   └── booking/
+│   │       └── userBooking.routes.js       # user booking routes
+│   └── barber/
+│       ├── auth/
+│       │   └── barberAuth.routes.js        # 8 lines - auth routes only
+│       ├── profile/
+│       │   └── barberProfile.routes.js     # 4 lines - profile routes
+│       └── business/
+│           └── barberBusiness.routes.js    # 4 lines - business routes
+└── models/
+    ├── schemas/
+    │   └── BreakTime.schema.js            - breakTimeSchema only
+    ├── User.model.js                       - user model
+    └── Barber.model.js                     - clean barber model without dead code
