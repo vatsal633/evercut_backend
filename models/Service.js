@@ -8,6 +8,11 @@ const serviceSchema = new mongoose.Schema({
     enum: ['single', 'bundled'],
     required: true,
   },
+   serviceFor: {
+    type: String,
+    enum: ['male', 'female', 'unisex' ],
+    default: 'unisex',
+  },
 
   serviceName: { type: String, required: true },
 

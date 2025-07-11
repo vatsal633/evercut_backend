@@ -15,6 +15,7 @@ import barberProfileRoutes from "./routes/barber/profile/barberProfile.routes.js
 import barberBusinessRoutes from "./routes/barber/business/barberBusiness.routes.js";
 import barberEmployeeRoutes from "./routes/barber/business/barberEmployee.routes.js";
 import barberServiceRoutes from "./routes/barber/business/barberService.routes.js";
+import photoGelleryRoutes from "./routes/barber/profile/photoGellary.routes.js";
 
 dotenv.config();
 connectDB();
@@ -36,6 +37,7 @@ app.use("/api/barber/profile", barberProfileRoutes);
 app.use("/api/barber/business", barberBusinessRoutes);
 app.use("/api/barber/employees", barberEmployeeRoutes);
 app.use("/api/barber/services", barberServiceRoutes);
+app.use("/api/barber/photos", photoGelleryRoutes); // Assuming photo routes are under barber profile
 
 // Error handling middleware for multer
 app.use((error, req, res, next) => {

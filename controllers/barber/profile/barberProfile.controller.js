@@ -8,9 +8,9 @@ import {
 // Get barber profile
 export const getBarberProfile = async (req, res) => {
   try {
-    const { uid } = req.firebaseUser;
+    const { firebaseUid } = req.firebaseUser;
 
-    const barber = await BarberSetup.findOne({ firebaseUid: uid }).select('-pin');
+    const barber = await BarberSetup.findOne({ firebaseUid }).select('-pin');
 
     if (!barber) {
       return res.status(404).json({
@@ -37,7 +37,7 @@ export const getBarberProfile = async (req, res) => {
 // Update barber PIN
 export const updateBarberPin = async (req, res) => {
   try {
-    const { uid } = req.firebaseUser;
+    const { firebaseUid } = req.firebaseUser;
     const { currentPin, newPin, confirmNewPin } = req.body;
 
     // Validate PIN update request
@@ -50,7 +50,7 @@ export const updateBarberPin = async (req, res) => {
     }
 
     // Find barber profile
-    const barber = await BarberSetup.findOne({ firebaseUid: uid });
+    const barber = await BarberSetup.findOne({ firebaseUid });
     if (!barber) {
       return res.status(404).json({
         success: false,
@@ -72,7 +72,7 @@ export const updateBarberPin = async (req, res) => {
 
     // Update PIN in database
     const updatedBarber = await BarberSetup.findOneAndUpdate(
-      { firebaseUid: uid },
+      { firebaseUid },
       {
         pin: hashedNewPin,
         updatedAt: new Date()
