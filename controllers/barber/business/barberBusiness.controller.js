@@ -4,10 +4,10 @@ import { validateBusinessUpdate } from './barberValidation.service.js';
 // Update business info
 export const updateBusinessInfo = async (req, res) => {
   try {
-    const { uid } = req.firebaseUser;
+    const { firebaseUid } = req.firebaseUser;
 
     // Validate if barber exists
-    const existingBarber = await BarberSetup.findOne({ firebaseUid: uid });
+    const existingBarber = await BarberSetup.findOne({ firebaseUid });
     if (!existingBarber) {
       return res.status(404).json({
         success: false,
@@ -37,7 +37,7 @@ export const updateBusinessInfo = async (req, res) => {
 
     // Update the barber profile
     const updatedBarber = await BarberSetup.findOneAndUpdate(
-      { firebaseUid: uid },
+      { firebaseUid },
       { $set: updateData },
       {
         new: true,

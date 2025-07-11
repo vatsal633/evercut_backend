@@ -2,10 +2,10 @@ import BarberSetup from '../../../models/Barber.model.js';
 import { validatePinCreation, hashPin } from '../profile/barberPinValidation.service.js';
 
 export const checkBarberAfterOTP = async (req, res) => {
-  const { uid, phone_number } = req.firebaseUser;
+  const { firebaseUid, phone_number } = req.firebaseUser;
 
   try {
-    const barber = await BarberSetup.findOne({ firebaseUid: uid });
+    const barber = await BarberSetup.findOne({ firebaseUid });
 
     if (barber) {
       return res.status(200).json({
