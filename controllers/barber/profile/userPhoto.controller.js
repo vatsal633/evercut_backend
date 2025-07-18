@@ -1,32 +1,21 @@
 import Photo from '../../../models/PhotoModel.js';
+import { CloudinaryStorage } from 'multer-storage-cloudinary';
+import cloudinary from '../../../config/cloudinary.js';
 import multer from 'multer';
 import path from 'path';
-import fs from 'fs';
 import { fileURLToPath } from 'url';
 
 // Get __dirname in ESM
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const uploadDir = path.join(__dirname, '../uploads/photos');
-
-    // Create directory if it doesn't exist
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    // Generate unique filename
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    const fileExtension = path.extname(file.originalname);
-    const fileName = `${req.firebaseUser?.uid || 'unknown'}-${uniqueSuffix}${fileExtension}`;
-    cb(null, fileName);
-  }
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: (req, file) => ({
+    folder: `evercut/barber/${req.firebaseUser.firebaseUid}`, // Dynamic folder per barber
+    allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
+    transformation: [{ width: 800, height: 800, crop: 'limit' }]
+  })
 });
 
 // File filter for images
@@ -52,7 +41,7 @@ export const upload = multer({
 
 // Upload single or multiple photos
 export const uploadPhotos = async (req, res) => {
-   const { firebaseUid } = req.firebaseUser;
+  const { firebaseUid } = req.firebaseUser;
 
   try {
     if (!req.files || req.files.length === 0) {
@@ -65,13 +54,9 @@ export const uploadPhotos = async (req, res) => {
 
     // Check photo limit (optional - you can set a limit per barber)
     const existingPhotoCount = await Photo.getPhotoCountByBarber(firebaseUid);
-    const maxPhotos = 50; // Set your limit
+    const maxPhotos = 10; // Set your limit
 
     if (existingPhotoCount + req.files.length > maxPhotos) {
-      // Delete uploaded files if limit exceeded
-      req.files.forEach(file => {
-        fs.unlinkSync(file.path);
-      });
 
       return res.status(400).json({
         message: `Photo limit exceeded. Maximum ${maxPhotos} photos allowed.`
@@ -81,7 +66,8 @@ export const uploadPhotos = async (req, res) => {
     const uploadedPhotos = [];
 
     for (const file of req.files) {
-      const photoUrl = `/uploads/photos/${file.filename}`;
+      const photoUrl = file.path;
+      const cloudinaryId = file.public_id  || file.filename;
 
       const photo = await Photo.create({
         firebaseUid,
@@ -90,7 +76,8 @@ export const uploadPhotos = async (req, res) => {
         photoType,
         description,
         fileSize: file.size,
-        mimeType: file.mimetype
+        mimeType: file.mimetype,
+        cloudinaryId
       });
 
       uploadedPhotos.push(photo);
@@ -103,16 +90,6 @@ export const uploadPhotos = async (req, res) => {
 
   } catch (error) {
     console.error('Photo upload error:', error);
-
-    // Clean up uploaded files on error
-    if (req.files) {
-      req.files.forEach(file => {
-        if (fs.existsSync(file.path)) {
-          fs.unlinkSync(file.path);
-        }
-      });
-    }
-
     res.status(500).json({
       message: 'Error uploading photos',
       error: error.message
@@ -122,7 +99,7 @@ export const uploadPhotos = async (req, res) => {
 
 // Get all photos for authenticated barber
 export const getPhotos = async (req, res) => {
-   const { firebaseUid } = req.firebaseUser;
+  const { firebaseUid } = req.firebaseUser;
 
   try {
     const {
@@ -183,7 +160,7 @@ export const getPhotos = async (req, res) => {
 
 // Get single photo by ID
 export const getPhotoById = async (req, res) => {
-   const { firebaseUid } = req.firebaseUser;
+  const { firebaseUid } = req.firebaseUser;
   const { id } = req.params;
 
   try {
@@ -213,62 +190,33 @@ export const getPhotoById = async (req, res) => {
   }
 };
 
-// Update photo details (not the file itself)
-export const updatePhoto = async (req, res) => {
-   const { firebaseUid } = req.firebaseUser;
-  const { id } = req.params;
-  const { photoType, description } = req.body;
-
-  try {
-    const updateData = {};
-
-    if (photoType) updateData.photoType = photoType;
-    if (description !== undefined) updateData.description = description;
-
-    const photo = await Photo.findOneAndUpdate(
-      { _id: id, firebaseUid, isActive: true },
-      updateData,
-      { new: true, runValidators: true }
-    );
-
-    if (!photo) {
-      return res.status(404).json({
-        message: 'Photo not found'
-      });
-    }
-
-    res.status(200).json({
-      message: 'Photo updated successfully',
-      photo
-    });
-
-  } catch (error) {
-    console.error('Update photo error:', error);
-    res.status(500).json({
-      message: 'Error updating photo',
-      error: error.message
-    });
-  }
-};
 
 // Soft delete photo (set isActive to false)
 export const deletePhoto = async (req, res) => {
-   const { firebaseUid } = req.firebaseUser;
+  const { firebaseUid } = req.firebaseUser;
   const { id } = req.params;
 
   try {
-    const photo = await Photo.findOneAndUpdate(
-      { _id: id, firebaseUid, isActive: true },
-      { isActive: false },
-      { new: true }
-    );
+    // Permanently delete from MongoDB
+    const photo = await Photo.findOneAndDelete({
+      _id: id,
+      firebaseUid,
+      isActive: true
+    });
+
+    console.log('Photo document:', photo);
 
     if (!photo) {
       return res.status(404).json({
         message: 'Photo not found'
       });
     }
-
+    if (photo.cloudinaryId) {
+      console.log('Deleting from Cloudinary:', photo.cloudinaryId);
+      // await cloudinary.uploader.destroy(photo.cloudinaryId);
+      const result = await cloudinary.uploader.destroy(photo.cloudinaryId);
+  console.log('Cloudinary destroy result:', result);
+    }
     res.status(200).json({
       message: 'Photo deleted successfully'
     });
@@ -282,45 +230,10 @@ export const deletePhoto = async (req, res) => {
   }
 };
 
-// Hard delete photo (permanently remove from database and filesystem)
-export const permanentDeletePhoto = async (req, res) => {
-   const { firebaseUid } = req.firebaseUser;
-  const { id } = req.params;
-
-  try {
-    const photo = await Photo.findOneAndDelete({
-      _id: id,
-      firebaseUid
-    });
-
-    if (!photo) {
-      return res.status(404).json({
-        message: 'Photo not found'
-      });
-    }
-
-    // Delete physical file
-    const filePath = path.join(__dirname, `..${photo.photoUrl}`);
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
-    }
-
-    res.status(200).json({
-      message: 'Photo permanently deleted'
-    });
-
-  } catch (error) {
-    console.error('Permanent delete photo error:', error);
-    res.status(500).json({
-      message: 'Error permanently deleting photo',
-      error: error.message
-    });
-  }
-};
 
 // Get photo statistics for barber
 export const getPhotoStats = async (req, res) => {
-   const { firebaseUid } = req.firebaseUser;
+  const { firebaseUid } = req.firebaseUser;
 
   try {
     const stats = await Photo.aggregate([

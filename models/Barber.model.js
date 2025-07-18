@@ -14,6 +14,10 @@ const barberSetupSchema = new mongoose.Schema({
   location: { type: String, required: true },
   bio: { type: String },
 
+    // Shop Cover Image
+  coverUrl: { type: String },
+  coverCloudinaryId: { type: String },
+
   // Step 2 - Shop Type
   shopCategory: {
     type: String,
