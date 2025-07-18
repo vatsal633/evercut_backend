@@ -35,7 +35,9 @@ const photoSchema = new mongoose.Schema({
   mimeType: {
     type: String
   },
-
+   cloudinaryId: {
+    type: String // Cloudinary public ID for deletion
+  },
   isActive: {
     type: Boolean,
     default: true

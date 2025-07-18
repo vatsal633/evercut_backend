@@ -4,13 +4,15 @@ import {
      addEmployee, 
      getAllEmployees,
      updateEmployee, 
-     deleteEmployee 
+     deleteEmployee,
+     uploadEmployeePhoto
      } from '../../../controllers/barber/business/barberEmployee.controller.js';
 import verifyToken from '../../../middleware/verifyToken.js';
 
+
 const router = express.Router();
 
-router.post('/add', verifyToken, addEmployee);
+router.post('/add', verifyToken, uploadEmployeePhoto.single('photo'), addEmployee);
 router.get('/', verifyToken, getAllEmployees);
 router.put('/:id', verifyToken, updateEmployee);      // PUT /api/employees/:id
 router.delete('/:id', verifyToken, deleteEmployee);   // DELETE /api/employees/:id
