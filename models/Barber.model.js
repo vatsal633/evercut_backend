@@ -11,10 +11,22 @@ const barberSetupSchema = new mongoose.Schema({
   shopOwner: { type: String, required: true },
   emailId: { type: String, required: true },
   upiId: { type: String, required: true },
-  location: { type: String, required: true },
+  location: {
+    type: {
+      type: String,
+      enum: ['Point'],
+      required: true
+    },
+    coordinates: {
+      type: [Number],
+      required: true
+    }
+  },
+  address:{type:String,required:true},
+
   bio: { type: String },
 
-    // Shop Cover Image
+  // Shop Cover Image
   coverUrl: { type: String },
   coverCloudinaryId: { type: String },
 
@@ -44,5 +56,6 @@ const barberSetupSchema = new mongoose.Schema({
     default: Date.now,
   },
 });
+barberSetupSchema.index({ location: "2dsphere" });
 
 export default mongoose.model("BarberSetup", barberSetupSchema);

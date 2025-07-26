@@ -8,6 +8,11 @@ import connectDB from "./config/dbConnect.js";
 
 // User routes
 import userAuthRoutes from "./routes/user/auth/userAuth.routes.js";
+import userBookingRoutes from "./routes/user/booking/userBooking.routes.js"
+import userProfileRoutes from "./routes/user/profile/userProfile.routes.js"
+import homepageRoutes from "./routes/user/homepage/homepage.routes.js"
+import searchPageRoutes from "./routes/user/SearchPage/searchPage.routes.js"
+import shopInfoRoutes from "./routes/user/shopInfo/shopinfo.router.js"
 
 // Barber routes
 import barberAuthRoutes from "./routes/barber/auth/barberAuth.routes.js";
@@ -31,6 +36,11 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // User API routes
 app.use("/api/user/auth", userAuthRoutes);
+app.use("/api/user/booking",userBookingRoutes)
+app.use('/api/user',userProfileRoutes)
+app.use('/api/user/homepage',homepageRoutes)
+app.use('/api/user/searchpage',searchPageRoutes)
+app.use('/api/user/shop',shopInfoRoutes)
 
 // Barber API routes
 app.use("/api/barber/auth", barberAuthRoutes);

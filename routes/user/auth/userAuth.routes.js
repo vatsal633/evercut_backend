@@ -5,6 +5,6 @@ import verifyToken from "../../../middleware/verifyToken.js";
 const router = express.Router();
 
 router.post("/checkUserAfterOTP", verifyToken, checkUserAfterOTP);
-router.post("/complete-profile",  uploadUserPhoto.single("photo"), completeProfile);
+router.post("/complete-profile", verifyToken ,uploadUserPhoto.single("photo"), completeProfile);
 
 export default router;

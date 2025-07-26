@@ -2,10 +2,10 @@ import User from '../../../models/User.model.js';
 
 // Get user profile (for existing users)
 export const getUserProfile = async (req, res) => {
-  const { uid } = req.firebaseUser;
+  const { firebaseUid } = req.firebaseUser;
 
   try {
-    const user = await User.findOne({ firebaseUid: uid });
+    const user = await User.findOne({ firebaseUid});
 
     if (!user) {
       return res.status(404).json({
@@ -29,12 +29,12 @@ export const getUserProfile = async (req, res) => {
 };
 
 export const updateUserProfile = async (req, res) => {
-  const { uid } = req.firebaseUser;
+  const { firebaseUid } = req.firebaseUser;
   const updateData = req.body;
 
   try {
     const user = await User.findOneAndUpdate(
-      { firebaseUid: uid },
+      { firebaseUid},
       updateData,
       { new: true, runValidators: true }
     );

@@ -11,8 +11,22 @@ const userSchema = new mongoose.Schema({
   dateOfBirth: { type: Date, required: true },
   address: { type: String, required: true },
   email: { type: String, required: true, unique: true },
-  address: { type: String, required: true },
+  location: {
+    type: {
+      type: String, // "Point"
+      enum: ['Point'],
+      required: true
+    },
+    coordinates: {
+      type: [Number], // [longitude, latitude]
+      required: true
+    }
+  },
+
   createdAt: { type: Date, default: Date.now },
 });
+
+//add 2dsphere it creates a geospatial index on the location field 
+userSchema.index({ location: "2dsphere" });
 
 export default mongoose.model("User", userSchema);

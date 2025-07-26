@@ -1,5 +1,6 @@
 // controllers/barber/business/barberService.controller.js
 import Services from '../../../models/Service.js';
+import BarberModel from "../../../models/Barber.model.js"
 
 export const addService = async (req, res) => {
   // const firebaseUid = req.firebaseUser?.uid || req.body.firebaseUid;
@@ -17,11 +18,14 @@ export const addService = async (req, res) => {
   } = req.body;
 
   try {
+
+    const shopData = await BarberModel.findOne({firebaseUid})
     if (serviceType === 'single') {
       const finalPrice = actualPrice + offerPrice;
       const service = await Services.create({
         firebaseUid,
-         serviceFor,
+        shopId: shopData._id,
+        serviceFor,
         serviceType,
         serviceName,
         duration,
@@ -36,7 +40,8 @@ export const addService = async (req, res) => {
       const totalPrice = actualPrice + offerPrice;
       const service = await Services.create({
         firebaseUid,
-         serviceFor,
+         shopData:shopData._id,
+        serviceFor,
         serviceType,
         serviceName,
         bundledServicesName,
@@ -54,6 +59,7 @@ export const addService = async (req, res) => {
   }
 };
 
+//get all the service of specific shop
 export const getAllServices = async (req, res) => {
   // const firebaseUid = req.firebaseUser?.uid || req.body.firebaseUid;
     const firebaseUid = req.firebaseUser?.firebaseUid || req.body.firebaseUid || "test_firebase_uid";

@@ -3,6 +3,11 @@ import mongoose from 'mongoose';
 const serviceSchema = new mongoose.Schema({
   firebaseUid: { type: String, required: true },
 
+    shopId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "BarberSetup",   
+    },
+
   serviceType: {
     type: String,
     enum: ['single', 'bundled'],
