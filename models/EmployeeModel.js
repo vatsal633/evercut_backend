@@ -10,6 +10,10 @@ const employeeSchema = new mongoose.Schema({
   birthDate: { type: String, required: true },
   gender: { type: String, required: true },
   phoneNumber: { type: String, required: true, unique: true },
+  workingHours: { startingTime: String, endingTime: String },
+  bookingSlots: [{ date: String, time: String }],
+  blockedDates: [Date],
+  services: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Service' }],
 }, { timestamps: true });
 
 

@@ -23,7 +23,7 @@ export const uploadEmployeePhoto = multer({ storage: employeePhotoStorage });
 export const addEmployee = async (req, res) => {
     const { firebaseUid } = req.firebaseUser;
     // const firebaseUid = req.firebaseUser?.uid || req.body.firebaseUid;
-    const { firstName, lastName, birthDate, gender, phoneNumber } = req.body;
+    const { firstName, lastName, birthDate, gender, phoneNumber,workingHours,bookingSlots,blockedDates } = req.body;
      const file = req.file;
     try {
         // Check if employee with same phone exists for this barber
@@ -48,6 +48,9 @@ export const addEmployee = async (req, res) => {
             birthDate,
             gender,
             phoneNumber,
+            workingHours,
+            blockedDates,
+            bookingSlots
         });
 
         res.status(201).json({ message: 'Employee added successfully', employee });

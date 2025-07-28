@@ -4,10 +4,10 @@ import cloudinary from '../../../config/cloudinary.js';
 import multer from 'multer';
 
 export const checkUserAfterOTP = async (req, res) => {
-  const {firebaseUid, phone_number } = req.firebaseUser;
+  const { firebaseUid, phone_number } = req.firebaseUser;
 
   try {
-    let user = await User.findOne({ firebaseUid});
+    let user = await User.findOne({ firebaseUid });
 
     if (user) {
       // Existing user - login
@@ -60,8 +60,9 @@ export const completeProfile = async (req, res) => {
     firstName,
     lastName,
     gender,
-    dateOfBirth,  
+    dateOfBirth,
     address,
+    location: locationString,
     email,
   } = req.body;
 
@@ -82,6 +83,13 @@ export const completeProfile = async (req, res) => {
     const photoUrl = file.path;
     const cloudinaryId = file.public_id;
 
+    let location = null;
+    try {
+      location = JSON.parse(locationString);
+    } catch (error) {
+      return res.status(400).json({ error: 'Invalid location format' });
+    }
+
     const user = await User.create({
       firebaseUid,
       photoUrl,
@@ -92,6 +100,7 @@ export const completeProfile = async (req, res) => {
       gender,
       dateOfBirth,
       address,
+      location,
       email,
     });
 
