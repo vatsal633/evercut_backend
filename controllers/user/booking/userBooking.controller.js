@@ -20,6 +20,29 @@ export const BookSalon = async (req, res) => {
       });
     }
 
+    // check that employee is availavle at specific date
+    const availableAtDate = employee.blockedDates.includes(date)
+
+    if(availableAtDate){
+      return res.status(401).json({
+        success:false,
+        message:"salonist is not available right now, please book another!"
+      })
+    }
+
+
+    //checking that sloat is already booked or not
+    const sloatAlreadyBooked = employee.bookingSlots.some((slot)=>{
+      slot.date === date && slot.time === time
+    })
+
+    if(sloatAlreadyBooked){
+      return res.status(404).json({
+        success:false,
+        message:"Salonist not available at this date/time!"
+      })
+    }
+
     const bookingDetails = { ...employee, ...service };
 
     const newBooking = new Booking({
@@ -29,7 +52,14 @@ export const BookSalon = async (req, res) => {
       date,
       time,
       amount,
-    });
+    });    
+
+    //save booking slot to employee
+    await EmployeeModel.findByIdAndUpdate(
+      employeeId,
+      {$push:{bookingSlots:{date,time}}},
+      {new:true}
+    )  
 
     await newBooking.save();
 

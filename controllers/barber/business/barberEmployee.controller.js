@@ -23,7 +23,7 @@ export const uploadEmployeePhoto = multer({ storage: employeePhotoStorage });
 export const addEmployee = async (req, res) => {
     const { firebaseUid } = req.firebaseUser;
     // const firebaseUid = req.firebaseUser?.uid || req.body.firebaseUid;
-    const { firstName, lastName, birthDate, gender, phoneNumber,workingHours,bookingSlots,blockedDates } = req.body;
+    const { firstName, lastName, birthDate, gender, phoneNumber,workingHours,blockedDates } = req.body;
      const file = req.file;
     try {
         // Check if employee with same phone exists for this barber
@@ -50,7 +50,6 @@ export const addEmployee = async (req, res) => {
             phoneNumber,
             workingHours,
             blockedDates,
-            bookingSlots
         });
 
         res.status(201).json({ message: 'Employee added successfully', employee });
@@ -79,11 +78,11 @@ export const updateEmployee = async (req, res) => {
 
     const firebaseUid = req.firebaseUser?.firebaseUid || req.body.firebaseUid || "test_firebase_uid";   /// for testing only    
     const { id } = req.params;
-    const { firstName, lastName, birthDate, gender, phoneNumber, photoUrl,cloudinaryId } = req.body;
+    const { firstName, lastName, birthDate, gender, phoneNumber, photoUrl,cloudinaryId,workingHours,blockedDates } = req.body;
     try {
         const employee = await Employee.findOneAndUpdate(
             { _id: id, firebaseUid },
-            { firstName, lastName, birthDate, gender, phoneNumber, photoUrl, cloudinaryId },
+            { firstName, lastName, birthDate, gender, phoneNumber, photoUrl, cloudinaryId,workingHours,blockedDates },
             { new: true }   // Return the updated document
         );
         if (!employee) {
