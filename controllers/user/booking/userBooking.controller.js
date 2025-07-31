@@ -15,31 +15,36 @@ export const BookSalon = async (req, res) => {
       .lean();
 
     if (!employee) {
-      return res.status(404).json({
+      return res.status(409).json({
         message: "salonist not found!",
       });
     }
 
     // check that employee is availavle at specific date
-    const availableAtDate = employee.blockedDates.includes(date)
-
-    if(availableAtDate){
-      return res.status(401).json({
-        success:false,
-        message:"salonist is not available right now, please book another!"
+    if (employee.blockedDates && employee.blockedDates.length > 0) {
+      const availableAtDate = employee.blockedDates.some((blockedDates) => {
+        blockedDates === date
       })
+
+      if (availableAtDate) {
+        return res.status(401).json({
+          success: false,
+          message: "salonist is not available right now, please book another!"
+        })
+      }
     }
 
 
+
     //checking that sloat is already booked or not
-    const sloatAlreadyBooked = employee.bookingSlots.some((slot)=>{
-      slot.date === date && slot.time === time
+    const sloatAlreadyBooked = employee.bookingSlots?.some((slot) => {
+      return slot.date === date && slot.time === time
     })
 
-    if(sloatAlreadyBooked){
+    if (sloatAlreadyBooked) {
       return res.status(404).json({
-        success:false,
-        message:"Salonist not available at this date/time!"
+        success: false,
+        message: "Salonist not available at this date/time!"
       })
     }
 
@@ -52,14 +57,20 @@ export const BookSalon = async (req, res) => {
       date,
       time,
       amount,
-    });    
+    });
 
     //save booking slot to employee
     await EmployeeModel.findByIdAndUpdate(
       employeeId,
-      {$push:{bookingSlots:{date,time}}},
-      {new:true}
-    )  
+      {
+        $push: {
+          bookingSlots: { date, time },// push the date and time to employee bookin slots array
+          assignedCustomers: userId,//push the userid to employee assinged customers array
+          services: serviceId//push the serviceid to employee services array
+        },
+      },
+      { new: true }
+    )
 
     await newBooking.save();
 
@@ -97,5 +108,96 @@ export const getBookingDetails = async (req, res) => {
     res
       .status(500)
       .json({ message: "Server error while fetching booking details" });
+  }
+};
+
+export const getSalonistAvailibility = async (req, res) => {
+  const { employeeId } = req.params
+
+  try {
+    let availability = await EmployeeModel.findById(employeeId).select("blockedDates bookingSlots")
+
+    if (!availability) {
+      return res.status(404).json({
+        success: false,
+        message: "salonist not found in database"
+      })
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "salonist availibility fetch successfully",
+      data: availability
+    })
+
+  } catch (error) {
+    console.log("error occuured in getSalonistAvailibility", err);
+    res.status(500).json({
+      success: false,
+      message: "Something went wrong while fetching availabel slots"
+    })
+  }
+}
+
+export const getAllEmployeesAvailability = async (req, res) => {
+  try {
+    const {firebaseUid} = req.firebaseUser
+    const { date } = req.query;
+
+    if (!date) {
+      return res.status(400).json({ message: "Date is required in query" });
+    }
+
+    const employees = await EmployeeModel.find({firebaseUid}).lean();
+    if (!employees.length) {
+      return res.status(404).json({ message: "No employees found" });
+    }
+
+    const generateTimeSlots = (start, end, interval) => {
+      const slots = [];
+      let current = new Date(`1970-01-01T${start}:00`);
+      const endTime = new Date(`1970-01-01T${end}:00`);
+      while (current < endTime) {
+        const next = new Date(current.getTime() + interval * 60000);
+        slots.push({
+          start: current.toTimeString().slice(0, 5),
+          end: next.toTimeString().slice(0, 5),
+          status: "available"
+        });
+        current = next;
+      }
+      return slots;
+    };
+
+    const allSlots = generateTimeSlots("09:00", "18:00", 30);
+
+    const availabilityData = employees.map(emp => {
+      const bookedSlots = (emp.bookingSlots || []).filter(slot => slot.date === date);
+
+      const updatedSlots = allSlots.map(slot => {
+        const isBooked = bookedSlots.some(
+          booked => slot.start < booked.end && slot.end > booked.start
+        );
+        return { ...slot, status: isBooked ? "booked" : "available" };
+      });
+
+      return {
+        employeeId: emp._id,
+        name: `${emp.firstName} ${emp.lastName}`,
+        slots: updatedSlots
+      };
+    });
+
+    return res.status(200).json({
+      status: "success",
+      date,
+      employees: availabilityData
+    });
+  } catch (error) {
+    console.error("Error fetching availability:", error);
+    res.status(500).json({
+      message: "Error fetching availability",
+      error: error.message
+    });
   }
 };
