@@ -13,7 +13,7 @@ const employeeSchema = new mongoose.Schema({
   phoneNumber: { type: String, required: true, unique: true },
   workingHours: { startingTime: String, endingTime: String },
   bookingSlots: [{ date: String, time: String }],
-  blockedDates: [{type:Date,default:null}],
+  blockedDates: [{type:Date}],
   services: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Service' }],
   assignedCustomers:[{
     type:mongoose.Schema.Types.ObjectId, ref:"User",default:[]

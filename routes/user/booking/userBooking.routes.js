@@ -6,7 +6,6 @@ const router = express.Router()
 
 router.post('/book',verifyToken,userBookingContoller.BookSalon)
 router.get('/booking-details/:bookingId',verifyToken,userBookingContoller.getBookingDetails)
-router.get('/check-availibility/:employeeId',verifyToken,userBookingContoller.getSalonistAvailibility)
-router.get('/availability', verifyToken, userBookingContoller.getAllEmployeesAvailability);
+router.get('/check-availibility/:employeeId',verifyToken,userBookingContoller.getEmployeeCalendarData)
 
 export default router

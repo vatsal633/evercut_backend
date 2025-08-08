@@ -1,20 +1,21 @@
 // controllers/barber/business/barberEmployee.controller.js
 import Employee from '../../../models/EmployeeModel.js';
-import { CloudinaryStorage} from 'multer-storage-cloudinary';
+import { CloudinaryStorage } from 'multer-storage-cloudinary';
 import cloudinary from '../../../config/cloudinary.js';
 import multer from 'multer';
+import BarberModel from '../../../models/Barber.model.js';
 
 
 
 // Employee photo storage: evercut/<firebaseUid>/employees
 const employeePhotoStorage = new CloudinaryStorage({
-  cloudinary,
-  params: (req, file) => ({
-    // folder: `evercut/${req.firebaseUser.firebaseUid}/employees`,
-    folder: `evercut/barber/employees/${req.firebaseUser.firebaseUid}`, // Dynamic folder per barber
-    allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
-    transformation: [{ width: 800, height: 800, crop: 'limit' }]
-  })
+    cloudinary,
+    params: (req, file) => ({
+        // folder: `evercut/${req.firebaseUser.firebaseUid}/employees`,
+        folder: `evercut/barber/employees/${req.firebaseUser.firebaseUid}`, // Dynamic folder per barber
+        allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+        transformation: [{ width: 800, height: 800, crop: 'limit' }]
+    })
 });
 
 export const uploadEmployeePhoto = multer({ storage: employeePhotoStorage });
@@ -23,16 +24,19 @@ export const uploadEmployeePhoto = multer({ storage: employeePhotoStorage });
 export const addEmployee = async (req, res) => {
     const { firebaseUid } = req.firebaseUser;
     // const firebaseUid = req.firebaseUser?.uid || req.body.firebaseUid;
-    const { firstName, lastName, birthDate, gender, phoneNumber,workingHours,blockedDates } = req.body;
-     const file = req.file;
+    const { firstName, lastName, birthDate, gender, phoneNumber, workingHours, blockedDates } = req.body;
+    const file = req.file;
     try {
+
+        const shopTime = await BarberModel.findOne({firebaseUid}).select("openTime closeTime")
+
         // Check if employee with same phone exists for this barber
-        const existing = await Employee.findOne({ phoneNumber, firebaseUid  });
+        const existing = await Employee.findOne({ phoneNumber, firebaseUid });
         if (existing) {
             return res.status(400).json({ message: 'Employee with this phone number already exists' });
         }
 
-         let photoUrl = '';
+        let photoUrl = '';
         let cloudinaryId = '';
         if (file) {
             photoUrl = file.path;
@@ -48,7 +52,7 @@ export const addEmployee = async (req, res) => {
             birthDate,
             gender,
             phoneNumber,
-            workingHours,
+            workingHours:shopTime,
             blockedDates,
         });
 
@@ -78,11 +82,11 @@ export const updateEmployee = async (req, res) => {
 
     const firebaseUid = req.firebaseUser?.firebaseUid || req.body.firebaseUid || "test_firebase_uid";   /// for testing only    
     const { id } = req.params;
-    const { firstName, lastName, birthDate, gender, phoneNumber, photoUrl,cloudinaryId,workingHours,blockedDates } = req.body;
+    const { firstName, lastName, birthDate, gender, phoneNumber, photoUrl, cloudinaryId, workingHours, blockedDates } = req.body;
     try {
         const employee = await Employee.findOneAndUpdate(
             { _id: id, firebaseUid },
-            { firstName, lastName, birthDate, gender, phoneNumber, photoUrl, cloudinaryId,workingHours,blockedDates },
+            { firstName, lastName, birthDate, gender, phoneNumber, photoUrl, cloudinaryId, workingHours, blockedDates },
             { new: true }   // Return the updated document
         );
         if (!employee) {

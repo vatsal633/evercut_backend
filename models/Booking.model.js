@@ -20,6 +20,12 @@ const bookingSchema = new mongoose.Schema({
         required: true
     },
 
+    shopId:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"BarberSetup",
+        required:true,
+    },
+
     date: {
         type: Date,
         required: true
