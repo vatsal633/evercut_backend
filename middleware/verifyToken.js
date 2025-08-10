@@ -10,10 +10,19 @@ const verifyToken = async (req, res, next) => {
     // 🚨 Temporary dev token for local testing
     if (token === 'test-barber-token') {
       req.firebaseUser = {
-        firebaseUid: 'test_firebase_uid_124',
+        firebaseUid: 'zvJuyX4ax0Y6db6FDYYanGIGkFg1',
         phone_number: '+911234567890'
       };
       return next();
+    }
+
+    //temp token for user 
+    if(token === "test-user-token"){
+      req.firebaseUser = {
+        firebaseUid:'test_user_firebase_uid'
+      }
+
+      return next()
     }
 
   try {

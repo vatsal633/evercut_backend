@@ -3,13 +3,21 @@ import Booking from "../../../models/Booking.model.js"
 import Service from "../../../models/Service.js"
 import UserModel from "../../../models/User.model.js"
 import BarberModel from "../../../models/Barber.model.js"
+import { getUpcommingBookings } from "../../../utils/getUpcommingBoookings.js"
 
 export const BookSalon = async (req, res) => {
-  const { userId, serviceId, employeeId, shopId,date, time, amount } = req.body
+  const { userId, serviceId, employeeId, shopId, date, time, amount } = req.body
 
   try {
 
     const shop = await BarberModel.findById(shopId).select("shopName address").lean()
+
+    if (!shop) {
+      return res.status(400).json({
+        success: false,
+        message: "error"
+      })
+    }
 
     const employee = await EmployeeModel.findById(employeeId)
       .select("firstName lastName photoUrl")
@@ -58,11 +66,11 @@ export const BookSalon = async (req, res) => {
       userId: userId,
       serviceId: serviceId,
       salonist: employeeId,
-      shopdata:shop,
+      shopId: shopId,
       date,
       time,
       amount,
-      status:"confirmed"
+      status: "confirmed"
     })
 
     //save booking slot to employee
@@ -92,15 +100,17 @@ export const BookSalon = async (req, res) => {
   }
 }
 
+
 export const getBookingDetails = async (req, res) => {
   const { bookingId } = req.params
+  const { filter } = req.query //Filter type: 'upcoming', 'past', or 'favourite'
 
   try {
     const bookingDetails = await Booking.findById(bookingId)
       .populate("serviceId", "finalPrice serviceType")
       .populate("salonist", "firstName lastName photoUrl")
       .populate("userId", "firstName")
-      .populate("shopId","shopName adress")
+      .populate("shopId", "shopName adress")
 
     if (!bookingDetails) {
       return res.status(404).json({ message: "Booking details not found!" })
@@ -121,9 +131,9 @@ export const getBookingDetails = async (req, res) => {
 export const getEmployeeCalendarData = async (req, res) => {
   try {
     const { employeeId } = req.params
-    const { date } = req.query 
-    
-    
+    const { date } = req.query
+
+
     const employee = await EmployeeModel.findById(employeeId)
       .select("firstName lastName blockedDates workingHours")
       .lean()
@@ -138,7 +148,7 @@ export const getEmployeeCalendarData = async (req, res) => {
 
     //getting todays date
     const now = new Date()
-    const todayStr = now.toISOString().slice(0,10)  // "2025-08-03"
+    const todayStr = now.toISOString().slice(0, 10)  // "2025-08-03"
 
     let bookings = []
 
@@ -185,7 +195,7 @@ export const getEmployeeCalendarData = async (req, res) => {
     const bookedSlots = bookings.map(b => ({
       date: b.date,
       time: b.time,
-      bookingInfo:b._id
+      bookingInfo: b._id
     }))
 
     return res.status(200).json({
@@ -202,6 +212,100 @@ export const getEmployeeCalendarData = async (req, res) => {
     res.status(500).json({
       message: "Error fetching calendar data",
       error: error.message
+    })
+  }
+}
+
+
+/**
+ * @desc for fetch all the user's booking by 'upcoming', 'past', or 'favourite'
+ * @route  GET /api/user/booking/filer-bookings/
+ * @access  Private.
+ * @param {string} req.params - user's unique mongodb generated Id
+ * @query  {string} [filter] - Filter type: 'upcoming', 'past', or 'favourite'
+ * @returns {Object} JSON response: return all the booking accordint to filter
+ */
+export const filterBookings = async (req, res) => {
+  const { firebaseUid } = req.firebaseUser;
+  const { userid } = req.params;
+  const { filter } = req.query;
+
+  try {
+    const now = new Date();
+    const todayStr = now.toISOString().slice(0, 10);
+
+    let bookings = []
+    if (filter === "upcoming") {
+      
+      getUpcommingBookings()
+
+      const userBookings = await Booking.find({
+        userId: userid,
+        date: { $gte: todayStr }
+      }).lean();
+
+      return res.status(200).json({
+        success: true,
+        bookings: userBookings
+      });
+    }
+
+    if (filter === "favourite") {
+      const userFavorateBookings = await UserModel.findOne({ firebaseUid })
+        .select("favorateBookings -_id") //fetch fav booking eccept _id
+        .lean();
+
+      if (!userFavorateBookings) {
+        return res.status(404).json({
+          success: false,
+          message: "No favourite booking found"
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        favouriteBookings: userFavorateBookings
+      });
+    }
+
+    return res.status(400).json({ success: false, message: "Invalid filter type" });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Server error while filtering the bookings"
+    });
+  }
+};
+
+
+
+export const addToFavorites = async (req, res) => {
+  const { firebaseUid } = req.firebaseUser
+  const { bookingId } = req.params
+  try {
+
+    const user = await UserModel.findOneAndUpdate(
+      { firebaseUid },
+      {
+        $push: {
+          favorateBookings: bookingId,
+        }
+      },
+      { new: true }
+    )
+
+    res.status(200).json({
+      success: true,
+      message: "favourite booking updated successfully",
+      favBoookings: user.favorateBookings
+    })
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      success: false,
+      message: "something went wrong while updating favourite bookings!"
     })
   }
 }

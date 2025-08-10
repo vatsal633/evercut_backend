@@ -54,7 +54,7 @@ export const uploadUserPhoto = multer({ storage: userPhotoStorage });
 
 
 export const completeProfile = async (req, res) => {
-  const file = req.file;
+  // const file = req.file;
   const {
     phoneNumber,
     firstName,
@@ -76,12 +76,12 @@ export const completeProfile = async (req, res) => {
     const existing = await User.findOne({ firebaseUid });
     if (existing) return res.status(400).json({ error: 'User already exists' });
 
-    if (!file) {
-      return res.status(400).json({ error: 'Profile photo is required' });
-    }
+    // if (!file) {
+    //   return res.status(400).json({ error: 'Profile photo is required' });
+    // }
 
-    const photoUrl = file.path;
-    const cloudinaryId = file.public_id;
+    // const photoUrl = file.path;
+    // const cloudinaryId = file.public_id;
 
     let location = null;
     try {
@@ -92,8 +92,8 @@ export const completeProfile = async (req, res) => {
 
     const user = await User.create({
       firebaseUid,
-      photoUrl,
-      cloudinaryId,
+      // photoUrl,
+      // cloudinaryId,
       phoneNumber,
       firstName,
       lastName,

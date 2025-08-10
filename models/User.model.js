@@ -23,6 +23,11 @@ const userSchema = new mongoose.Schema({
     }
   },
 
+  favorateBookings:[{
+    type:mongoose.Schema.Types.ObjectId,
+    default:null
+  }],
+
   createdAt: { type: Date, default: Date.now },
 });
 
