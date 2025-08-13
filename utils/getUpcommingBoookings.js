@@ -43,4 +43,6 @@ export const getUpcommingBookings = async (date, userId) => {
         })
 
     }
+
+    return bookings
 }

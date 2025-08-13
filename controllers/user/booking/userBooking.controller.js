@@ -228,25 +228,21 @@ export const getEmployeeCalendarData = async (req, res) => {
 export const filterBookings = async (req, res) => {
   const { firebaseUid } = req.firebaseUser;
   const { userid } = req.params;
-  const { filter } = req.query;
+  const { filter,date } = req.query;
 
   try {
     const now = new Date();
     const todayStr = now.toISOString().slice(0, 10);
 
-    let bookings = []
+   
     if (filter === "upcoming") {
       
-      getUpcommingBookings()
+      const bookings  = getUpcommingBookings(date,userid)
 
-      const userBookings = await Booking.find({
-        userId: userid,
-        date: { $gte: todayStr }
-      }).lean();
 
       return res.status(200).json({
         success: true,
-        bookings: userBookings
+        bookings: bookings
       });
     }
 

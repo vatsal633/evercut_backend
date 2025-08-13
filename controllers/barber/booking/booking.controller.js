@@ -118,3 +118,95 @@ export const deleteBookedSlotAfterPayment = async (req, res) => {
         });
     }
 };
+
+
+export const getAllBookings = async (req, res) => {
+    try {
+        const count = await Booking.countDocuments({}); // Only counts all bookings
+
+        res.status(200).json({
+            success: true,
+            count: count,
+           
+        });
+    } catch (error) {
+        console.error("Error counting bookings:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Server error counting bookings.",
+            error: error.message 
+        });
+    }
+};
+
+export const getPendingBookings = async (req, res) => {
+    try {
+        const count = await Booking.countDocuments({ status: "pending" }); // Only counts pending bookings
+
+        res.status(200).json({
+            success: true,
+            count: count,
+           
+        });
+    } catch (error) {
+        console.error("Error counting pending bookings:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Server error counting pending bookings.",
+            error: error.message 
+        });
+    }
+};
+
+export const getCompletedBookings = async (req, res) => {
+    try {
+      const count = await Booking.countDocuments({ status: "confirmed" });// Only counts pending bookings
+
+        res.status(200).json({
+            success: true,
+            count: count,
+           
+        });
+ 
+    
+  } catch (error) {
+   console.error("Error fetching completed bookings:", error);
+    res.status(500).json({ 
+      success: false, 
+      message: "Server error fetching completed bookings.",
+      error: error.message 
+    });
+  }
+};
+
+export const getCompletedBookingsDetails = async (req, res) => {
+  try {
+    const completedBookings = await Booking.find({ status: "confirmed" })
+      .populate("userId", "firstName profileImage ")
+      .populate("salonist", "firstName ")
+      .lean();
+
+    const filteredBookings = completedBookings.map(b => {
+      return {
+        coverUrl: b.userId?.profileImage || null,
+        username: b.userId?.firstName, 
+        bookingTime: b.timeSlot?.start, 
+        employeeAttended: `${b.salonist?.firstName || ''} ${b.salonist?.lastName || ''}`.trim(),
+        status: b.status || 'unknown',
+      };
+    })
+
+    res.status(200).json({
+      success: true,
+      data: filteredBookings,
+    });
+
+  } catch (error) {
+    console.error("Error fetching completed bookings:", error);
+    res.status(500).json({ 
+      success: false, 
+      message: "Server error fetching completed bookings.",
+      error: error.message 
+    });
+  }
+};
